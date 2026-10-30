@@ -88,3 +88,8 @@ disc and melody, so a melody you pick up casts a larger, softer shadow.
 - [Salamander Grand Piano](https://archive.org/details/SalamanderGrandPianoV3) by Alexander Holm (CC BY 3.0), streamed from the Tone.js sample host
 - [Instrument Serif](https://fonts.google.com/specimen/Instrument+Serif) and [DM Mono](https://fonts.google.com/specimen/DM+Mono) (SIL Open Font License)
 - Musical inspiration from Arvo Pärt and Leo Brouwer
+
+## License
+
+Released under the [MIT License](LICENSE). The piano samples, Magenta and its models, and the fonts
+are not part of this repository: they load from their own hosts, under the licenses in the credits.

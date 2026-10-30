@@ -1,6 +1,7 @@
 {
   "name": "eternal-circles-remastered",
   "private": true,
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "start": "node tools/serve.mjs",
