@@ -2,6 +2,8 @@
 
 *Four voices, eight melodies, a pedal, and Arvo Pärt's tintinnabuli.*
 
+**[Play it in your browser](https://juancopi81.github.io/eternal-circles-remastered/)**, ideally with headphones.
+
 A remaster of [Eternal Circles](https://github.com/juancopi81/eternal-circles) (2020), an instrument in
 which melodies from [MusicVAE](https://magenta.tensorflow.org/music-vae)'s latent space turn forever on
 four discs. The original idea is kept intact: drag a melody onto a disc and it loops, click its
@@ -48,6 +50,9 @@ npm test       # tintinnabuli and retrograde rules
 
 Opening `index.html` straight from disk won't work, because browsers don't load ES modules from
 `file://` URLs.
+
+The live version is GitHub Pages serving `main` as it is, so every push to `main` updates it. The
+empty `.nojekyll` file tells Pages not to run Jekyll.
 
 ## How it is made
 
