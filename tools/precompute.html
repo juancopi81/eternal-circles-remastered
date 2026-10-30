@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Precompute melody sets</title>
+  <style>
+    body { background: #0b0b0d; color: #e8dcc6; font: 13px/1.5 ui-monospace, monospace; padding: 24px; max-width: 80ch; }
+    pre { white-space: pre-wrap; word-break: break-all; color: #b9ad97; }
+  </style>
+</head>
+<body>
+  <h1>Precompute melody sets</h1>
+  <p>Walks MusicVAE's latent space (mel_2bar_small) from seed A to seed B in eight stations for
+     every set in <code>src/music/seeds.js</code>, and prints the result as JSON. Paste it into
+     <code>src/music/sets.js</code>. The walk itself lives in <code>src/music/latent-walk.js</code>;
+     nudging repeated stations is random, so every run gives a slightly different set.</p>
+  <p>Serve the repo root over HTTP (for example <code>python3 -m http.server</code>) and open
+     <code>/tools/precompute.html</code>.</p>
+  <p id="status">loading Magenta…</p>
+  <pre id="out"></pre>
+
+  <script src="https://cdn.jsdelivr.net/npm/@magenta/music@1.23.1/dist/magentamusic.js"></script>
+  <script type="module">
+    import { SEEDS } from '../src/music/seeds.js';
+    import { walk } from '../src/music/latent-walk.js';
+
+    const status = document.getElementById('status');
+    const out = document.getElementById('out');
+    const CHECKPOINT = 'https://storage.googleapis.com/magentadata/js/checkpoints/music_vae/mel_2bar_small';
+
+    try {
+      const vae = new mm.MusicVAE(CHECKPOINT);
+      await vae.initialize();
+      const result = {};
+      for (const set of SEEDS) {
+        status.textContent = `walking ${set.name}…`;
+        result[set.id] = await walk(mm, vae, set.a, set.b);
+      }
+      vae.dispose();
+      window.__RESULT = JSON.stringify(result);
+      out.textContent = window.__RESULT;
+      status.textContent = 'done';
+    } catch (err) {
+      status.textContent = `failed: ${err}`;
+      window.__ERROR = String(err);
+    }
+  </script>
+</body>
+</html>

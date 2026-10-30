@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#060505">
+  <title>Eternal Circles</title>
+  <meta name="description" content="Four voices, eight melodies from MusicVAE's latent space, a pedal and Arvo Pärt's tintinnabuli. A remaster of Eternal Circles (2020).">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23060505'/%3E%3Ccircle cx='32' cy='32' r='20' fill='%23f1e4ce'/%3E%3Ccircle cx='32' cy='32' r='5' fill='%23060505'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <canvas id="floor" aria-hidden="true"></canvas>
+  <canvas id="scene" aria-label="Four discs that loop melodies, and eight melodies to drag onto them"></canvas>
+  <div id="hint" class="hint" aria-hidden="true"></div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <header class="hud hud-top">
+    <div class="brand">
+      <h1>Eternal <em>Circles</em></h1>
+      <p id="set-label" class="caption"></p>
+    </div>
+    <nav class="controls" aria-label="Transport">
+      <div class="tempo" title="Tempo (← →)">
+        <button class="ghost" data-tempo="-4" aria-label="Slower">−</button>
+        <span><b id="bpm">98</b> bpm</span>
+        <button class="ghost" data-tempo="4" aria-label="Faster">+</button>
+      </div>
+      <button id="play" class="round" aria-label="Pause" title="Play / pause (space)">
+        <svg class="icon-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6v12M15 6v12"/></svg>
+        <svg class="icon-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z"/></svg>
+      </button>
+      <button id="help-button" class="round" aria-label="How to play" title="How to play (H)">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.2 9.2a2.9 2.9 0 1 1 4 2.7c-.8.4-1.2.9-1.2 1.8v.6M12 17.6v.1"/></svg>
+      </button>
+      <button id="settings-button" class="round" aria-label="Settings" title="Settings (S)">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><circle cx="12" cy="12" r="8.5" stroke-dasharray="2.2 2.4"/></svg>
+      </button>
+    </nav>
+  </header>
+
+  <section id="intro" class="overlay intro" aria-labelledby="intro-title">
+    <div class="intro-inner">
+      <p class="caption">four voices · eight melodies · a pedal · tintinnabuli</p>
+      <h2 id="intro-title">Eternal <em>Circles</em></h2>
+      <p class="lede">Drag a melody into a circle and it turns forever.<br>
+        Every note is answered by a bell from the tonic triad.</p>
+      <button id="enter" class="enter" aria-label="Enter">
+        <span>enter</span>
+      </button>
+      <p class="caption small">your cursor is a lantern · headphones, please</p>
+    </div>
+    <footer class="credits">
+      A remaster of <i>Eternal Circles</i> (2020) by Juan Carlos Piñeros ·
+      melodies by MusicVAE · piano: Salamander Grand (CC BY 3.0)
+    </footer>
+  </section>
+
+  <section id="help" class="overlay help" aria-labelledby="help-title" hidden>
+    <div class="help-inner">
+      <h2 id="help-title">How to <em>play</em></h2>
+      <dl>
+        <dt>drag a melody onto a circle</dt><dd>it loops there, two bars at a time</dd>
+        <dt>click a melody</dt><dd>listen to it once</dd>
+        <dt>click the dark centre</dt><dd>retrograde: the melody runs backwards</dd>
+        <dt>double-click a circle</dt><dd>let it go quiet</dd>
+        <dt>scroll over a circle</dt><dd>its volume</dd>
+        <dt>click the words under a circle</dt><dd>its instrument, and how its bells answer</dd>
+        <dt>move the lantern</dt><dd>the voices you light come closer</dd>
+      </dl>
+      <p class="about">Each circle is a score: the angle is time, the distance from the centre is pitch.
+        The magenta arcs are the melody (Pärt's <i>M-voice</i>). The golden circles are the notes of
+        the tonic triad, and each golden bead is a bell (the <i>T-voice</i>) placed on the triad note
+        just above or below the melody note it answers. The eight melodies are eight steps
+        through the latent space of MusicVAE, from melody A to melody B.</p>
+      <p class="caption small">space · play / pause &nbsp;&nbsp; ← → · tempo &nbsp;&nbsp; S · settings &nbsp;&nbsp; H · this page</p>
+      <button class="ghost close" data-close aria-label="Close">close</button>
+    </div>
+  </section>
+
+  <aside id="settings" class="drawer" aria-labelledby="settings-title" hidden>
+    <div class="drawer-head">
+      <h2 id="settings-title">Settings</h2>
+      <button class="ghost close" data-close aria-label="Close settings">close</button>
+    </div>
+
+    <section>
+      <h3>Melodies</h3>
+      <div id="sets" class="sets" role="radiogroup" aria-label="Melody set"></div>
+    </section>
+
+    <section>
+      <h3>Voices</h3>
+      <div id="voices" class="voices"></div>
+    </section>
+
+    <section>
+      <h3>Bells <span class="aside">tintinnabuli</span></h3>
+      <div class="row">
+        <span>position</span>
+        <div class="segmented" id="t-position" role="radiogroup" aria-label="Bell position">
+          <button data-value="1" aria-checked="true" role="radio">first</button>
+          <button data-value="2" aria-checked="false" role="radio">second</button>
+        </div>
+      </div>
+      <label class="row"><span>bell level</span><input id="bell-level" type="range" min="0" max="1" step="0.01" value="0.3"></label>
+    </section>
+
+    <section>
+      <h3>Space</h3>
+      <label class="row"><span>pedal</span><input id="pedal-level" type="range" min="0" max="0.16" step="0.005" value="0.07"></label>
+      <label class="row"><span>room</span><input id="room-level" type="range" min="0" max="1.4" step="0.01" value="0.85"></label>
+      <label class="row toggle"><span>lantern listening</span><input id="lantern-listening" type="checkbox" checked></label>
+    </section>
+
+    <section>
+      <h3>Dream <span class="aside">with Magenta</span></h3>
+      <p class="note">MusicRNN improvises two new seed melodies from the notes below, over the set's
+        chord, and MusicVAE walks between them in eight steps. The first dream downloads the
+        models (a few MB).</p>
+      <div class="dream-grid">
+        <label>seed A<select id="seed-a"></select></label>
+        <label>seed B<select id="seed-b"></select></label>
+      </div>
+      <div class="row">
+        <span>temperature</span>
+        <div class="segmented" id="temperature" role="radiogroup" aria-label="Temperature">
+          <button data-value="0.6" role="radio" aria-checked="false">0.6</button>
+          <button data-value="0.9" role="radio" aria-checked="true">0.9</button>
+          <button data-value="1.2" role="radio" aria-checked="false">1.2</button>
+          <button data-value="1.4" role="radio" aria-checked="false">1.4</button>
+        </div>
+      </div>
+      <button id="dream" class="wide">dream a new pair</button>
+      <p id="dream-status" class="note status" aria-live="polite"></p>
+    </section>
+  </aside>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
