@@ -19,9 +19,10 @@ wanders on its own, along the kind of Lissajous orbit the notes followed in 2020
 distance from the centre is pitch. The magenta arcs are the melody.
 
 **Tintinnabuli.** Every note of the melody (Pärt's *M-voice*) is answered by a bell (the *T-voice*) on
-a note of the tonic triad: the nearest triad note above it, below it, or alternating. The golden
-circles on each disc are the triad's notes, so you can watch each bell land on one. Choose first or
-second position in the settings.
+a note of the tonic triad: the nearest triad note above it, below it, or alternating. As in Pärt, the
+rule is diatonic: a triad note spelled with the melody note's own letter doesn't count, so a G♯ is
+never answered by the G a semitone away. The golden circles on each disc are the triad's notes, so
+you can watch each bell land on one. Choose first or second position in the settings.
 
 ## Play
 

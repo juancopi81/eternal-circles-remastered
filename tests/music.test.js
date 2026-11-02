@@ -25,6 +25,15 @@ test('second position skips one triad note', () => {
   assert.equal(triadNeighbor(62, C_MINOR, -1, 2), 55); // D4 -> G3
 });
 
+test('the T voice is diatonic: no other spelling of the melody note', () => {
+  const E_MINOR = triadPitchClasses(4, 'minor');
+  assert.equal(triadNeighbor(68, E_MINOR, -1), 64); // G♯4 -> E4, not the G a semitone below
+  assert.equal(triadNeighbor(68, E_MINOR, 1), 71); // G♯4 -> B4
+  assert.equal(triadNeighbor(64, C_MINOR, -1), 60); // E4 -> C4, not E♭4
+  assert.equal(triadNeighbor(68, C_MINOR, -1), 67); // A♭4 -> G4: a new letter, so still the nearest
+  assert.equal(triadNeighbor(71, C_MINOR, 1), 72); // B4 -> C5: a semitone, but a new letter
+});
+
 test('alternating tintinnabuli voice', () => {
   const notes = [60, 62, 63, 65].map((pitch, i) => ({ pitch, start: i * 4, end: i * 4 + 4 }));
   const t = tintinnabuli(notes, C_MINOR, 'alternating');
