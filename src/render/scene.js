@@ -139,10 +139,13 @@ export class Scene {
       ctx.fillText(label, arc.x + arc.radius * Math.cos(angle), arc.y + arc.radius * Math.sin(angle));
     }
 
-    ctx.font = `400 10px ${MONO}`;
-    if ('letterSpacing' in ctx) ctx.letterSpacing = '0.18em';
-    ctx.fillStyle = rgba(PALETTE.cream, 0.26);
-    ctx.fillText('EIGHT STEPS THROUGH THE LATENT SPACE OF MUSICVAE', arc.x, arc.y + arc.radius + seeds[0].r + 24);
+    const captionY = arc.y + arc.radius + seeds[0].r + 24;
+    if (captionY < layout.height - 12) {
+      ctx.font = `400 10px ${MONO}`;
+      if ('letterSpacing' in ctx) ctx.letterSpacing = '0.18em';
+      ctx.fillStyle = rgba(PALETTE.cream, 0.26);
+      ctx.fillText('EIGHT STEPS THROUGH THE LATENT SPACE OF MUSICVAE', arc.x, captionY);
+    }
     ctx.restore();
   }
 

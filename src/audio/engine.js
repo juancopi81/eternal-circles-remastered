@@ -94,6 +94,9 @@ export class Engine {
       await this.ctx.resume();
       return;
     }
+    // iOS mutes web audio with the ring/silent switch unless the page asks for
+    // a playback session, the way a music player does.
+    if (navigator.audioSession) navigator.audioSession.type = 'playback';
     const ctx = new AudioContext({ latencyHint: 'interactive' });
     this.ctx = ctx;
 
@@ -131,6 +134,11 @@ export class Engine {
 
   get now() {
     return this.ctx ? this.ctx.currentTime : 0;
+  }
+
+  // Wakes a clock the browser suspended (Safari calls it "interrupted" after a call).
+  resume() {
+    if (this.ctx && this.ctx.state !== 'running') this.ctx.resume().catch(() => {});
   }
 
   // Transport ---------------------------------------------------------------

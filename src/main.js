@@ -203,22 +203,25 @@ function addRipple(disc, kind, strength) {
 
 // Gestures -------------------------------------------------------------------
 
-function hitTest(x, y) {
+// A fingertip is wider than a cursor, so on touch the small targets reach
+// further: the melodies, the words under each disc, and the eye.
+function hitTest(x, y, coarse = false) {
   if (state.drag) return null;
+  const reach = coarse ? 10 : 0;
   for (const seed of state.seeds) {
-    if (seed.appear > 0.5 && Math.hypot(x - seed.x, y - seed.y) < seed.r * 1.12) return { type: 'seed', seed };
+    if (seed.appear > 0.5 && Math.hypot(x - seed.x, y - seed.y) < Math.max(seed.r * 1.12, seed.r + reach)) return { type: 'seed', seed };
   }
   for (const disc of state.discs) {
     const rects = disc.labelRects;
     if (rects) {
       for (const [key, rect] of Object.entries(rects)) {
-        if (x >= rect.x && x <= rect.x + rect.w && y >= rect.y && y <= rect.y + rect.h) {
+        if (x >= rect.x && x <= rect.x + rect.w && y >= rect.y - reach && y <= rect.y + rect.h + reach) {
           return { type: 'label', disc, key };
         }
       }
     }
     const d = Math.hypot(x - disc.x, y - disc.y);
-    if (d < disc.r * 0.19 && disc.melodyIndex !== null) return { type: 'eye', disc };
+    if (d < Math.max(disc.r * 0.19, coarse ? 22 : 0) && disc.melodyIndex !== null) return { type: 'eye', disc };
     if (d < disc.r) return { type: 'disc', disc };
   }
   return null;
@@ -264,7 +267,8 @@ window.addEventListener('pointermove', (event) => {
   state.pointer.overCanvas = event.target === canvas;
   wake();
   const press = state.press;
-  if (press?.target?.type === 'seed' && !state.drag && Math.hypot(event.clientX - press.x, event.clientY - press.y) > 5) {
+  const slop = event.pointerType === 'mouse' ? 5 : 10; // fingers wobble more than mice
+  if (press?.target?.type === 'seed' && !state.drag && Math.hypot(event.clientX - press.x, event.clientY - press.y) > slop) {
     state.drag = { index: press.target.seed.index, x: event.clientX, y: event.clientY };
   }
   if (state.drag) {
@@ -278,8 +282,7 @@ canvas.addEventListener('pointerdown', (event) => {
   canvas.setPointerCapture(event.pointerId);
   state.pointer.x = event.clientX;
   state.pointer.y = event.clientY;
-  state.press = { x: event.clientX, y: event.clientY, target: hitTest(event.clientX, event.clientY) };
-  wake();
+  state.press = { x: event.clientX, y: event.clientY, target: hitTest(event.clientX, event.clientY, event.pointerType !== 'mouse') };
 });
 
 canvas.addEventListener('pointerup', (event) => {
@@ -337,6 +340,17 @@ document.documentElement.addEventListener('pointerleave', () => {
   state.pointer.leftAt = clock();
 });
 
+// Any touch wakes the interface. A phone sends no pointer moves between
+// touches, so this is what keeps the controls from fading while in use.
+window.addEventListener('pointerdown', () => {
+  wake();
+  resumeAudio();
+}, true);
+window.addEventListener('pointerup', resumeAudio, true);
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) resumeAudio();
+});
+
 canvas.addEventListener('wheel', (event) => {
   const target = hitTest(event.clientX, event.clientY);
   if (!target || !('disc' in target)) return;
@@ -361,6 +375,7 @@ window.addEventListener('keydown', (event) => {
     hud.closePanels();
   }
   wake();
+  resumeAudio();
 });
 
 function wake() {
@@ -369,6 +384,13 @@ function wake() {
     state.idle = false;
     document.body.classList.remove('idle');
   }
+}
+
+// Phones suspend the audio clock when the screen locks, the page is hidden or a
+// call comes in, and iOS lets it run again only from a gesture: a touch counts
+// as it lifts, a mouse press or a key as it goes down.
+function resumeAudio() {
+  if (state.started) engine.resume();
 }
 
 function audition(seed) {
